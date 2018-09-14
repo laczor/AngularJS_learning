@@ -1,0 +1,552 @@
+# AngularJS 1.6  31-
+
+**Udemy**
+[https://www.udemy.com/learn-angularjs/learn/v4](https://www.udemy.com/learn-angularjs/learn/v4)
+
+**Gitbub Repo:**
+[https://github.com/laczor/angularJs](https://github.com/laczor/angularJs)
+
+
+**Useful resources:**
+[http://www.angularjshub.com/examples/basics](http://www.angularjshub.com/examples/basics)
+[https://docs.angularjs.org/api](https://docs.angularjs.org/api)
+
+**Section 7 Custom Directives**
+Lesson 31 Resuable Components HTML
+Lesson 32 Variable and normalization
+Lesson 33 Creating a directive
+Lesson 34 Templates
+Lesson 35  Scope (@) 
+Lesson 36  Scope ( = )  
+Lesson 37 Scope (&) 
+Lesson 38 Repeated Directive
+Lesson 39  Compile
+Lesson 40 Link
+Lesson 41  Transclusion 
+**Section 8 Code Along Weather API**
+Lesson 42 CodeAlong Part1
+Lesson 43 CodeAlong Part2
+Lesson 45 CodeAlong Part3
+Lesson 46 CodeAlong Part4
+**Section 9**
+Lesson 49 ng-submit
+Lesson 50 Large Scale Service
+Lesson  51 Nested Controllers / Controller as ***
+
+
+
+
+## Lesson 32 Variable and normalization
+
+**Normalizaton**: Make everything consistent to the same standard
+(Text Normalization)
+
+
+You can't have "dashes" in javascript strings
+```javascript
+normalized-text
+```
+
+**Camelization**
+```javascript
+normalizeText
+```
+
+will be equivalent to this attribute in the **html**
+```javascript
+<div normalized-text="2"></div>
+```
+
+## Lesson 33 Creating a directive
+Basically, by using **angular.directive, ** you can declare a name, and a function, which should be returned with the following properties
+- restrict:       "to name selector"
+- template:    "which html should be displayed"
+- replace:      "if the wrapper html element selector should be replaced by the template's html or not"
+**app.js**
+```javascript
+//This is our created custom directive, custom reusable html component
+//Identifier types restrict:
+// Default is 'AE'
+// A --> Attribute  --> <div search-result></div>
+// E --> Element    --> <search-result></search-result>
+// C --> Class      --> <div class="search-result"></div>
+// M --> Comment    --> <!-- directive: search-result -->
+
+// replace : --> when you see this directive, completley replace it so <search-result></search-result> html element will be completly gone
+myApp.directive("searchResult", function() {
+   return {
+       restrict: 'AECM',
+       template: '<a href="#" class="list-group-item"><h4 class="list-group-item-heading">Doe, John</h4><p class="list-group-item-text">555 Main St., New York, NY 11111</p></a>',
+       replace: true
+   }
+});
+```
+
+**main.html**
+```javascript
+<h3>Search Results</h3>
+<div class="list-group">
+    <search-result></search-result>
+    <div search-result></div>
+    <div class="search-result"></div>
+    <!-- directive: search-result -->
+</div>
+```
+
+## Lesson 34 Templates
+Instead of using template:, you can use **templateURL ** to reference a standalone html
+```javascript
+
+//You can outsource your template here, using templatURL
+myApp.directive("searchResult", function() {
+   return {
+       restrict: 'AECM',
+       templateUrl: 'directives/searchresult.html',
+       replace: true
+   }
+```
+
+## Lesson 35  Scope (@) 
+With using **@ ** we can** limit our directive's scope** to the passed data **through custom attributes** in the html.
+**1 Way binding!!!!**
+
+**app.js**
+```javascript
+//isolated Scope: Instead of providing the whole scope of the parent controller to the directive 
+//we limit it's scope to the isolated attributes of the parent scope
+//Seperated our Model from the parent Controller's scope
+// with "@" we tell this directive, we pass scope variables through custom attributes
+
+myApp.directive("searchResult", function() {
+   return {
+       restrict: 'AECM',
+       templateUrl: 'directives/searchresult.html',
+       replace: true,
+       scope: {
+           personName: "@",
+           personAddress: "@"
+       }
+   }
+```
+
+**main.html**
+```javascript
+    <search-result person-name="{{ person.name }}" person-address="{{ person.address }}"></search-result>
+```
+
+**directives/searchresult.html**
+```javascript
+<a href="#" class="list-group-item">
+    <h4 class="list-group-item-heading">{{ personName }}</h4>
+    <p class="list-group-item-text">
+        {{ personAddress }}
+    </p>
+</a>
+```
+## 
+Lesson 36  Scope ( = )  
+We can pass an object do the directive from the parent controller
+**2 way binding!!!**
+
+```javascript
+// We can pass a whole object into the directive.
+// But whatever happens with this object, it will be reflected in the parent's object
+myApp.directive("searchResult", function() {
+   return {
+       restrict: 'AECM',
+       templateUrl: 'directives/searchresult.html',
+       replace: true,
+       scope: {
+           personObject: "="
+       }
+   }
+```
+**main.html**
+```javascript
+   <search-result person-object="person"></
+```
+
+**directives/searchresult.html**
+```javascript
+<a href="#" class="list-group-item">
+    <h4 class="list-group-item-heading">{{ personObject.name }}</h4>
+    <p class="list-group-item-text">
+        {{ personObject.address }}
+    </p>
+</a>
+```
+## Lesson  37 Scope (&) 
+
+Pass a **function. **
+1. We assign a function to our controller's scope
+1. We are telling the directive, that it should wait for a function to be passed, using **"&"**
+1. Assign the object, plus the function with a (parameterVariable)    **main.html**
+1. Assign the object to the variable  using ojbect map          (**directives/searchresult.html**)
+**app.js**
+```javascript
+myApp.controller('mainController', ['$scope', '$log', function($scope, $log) {
+    $scope.person = {
+        name: 'John Doe',
+        address: '555 Main St.',
+        city: 'New York',
+        state: 'NY',
+        zip: '11111'
+    }
+    
+  //we add a custom function to our custom scope, which will just generate a text from the object argument  
+    $scope.formattedAddress = function(person) {
+        return person.address + ', ' + person.city + ', ' + person.state + ' ' + person.zip;
+    };
+    
+}]);
+
+//We are passing a function with "&"
+myApp.directive("searchResult", function() {
+   return {
+       restrict: 'AECM',
+       templateUrl: 'directives/searchresult.html',
+       replace: true,
+       scope: {
+           personObject: "=",
+           formattedAddressFunction: "&"
+       }
+   }
+```
+**main.html**
+```javascript
+    <search-result person-object="person" formatted-address-function="formattedAddress(aperson)"></search-result>
+```
+**directives/searchresult.html**
+```javascript
+<a href="#" class="list-group-item">
+    <h4 class="list-group-item-heading">{{ personObject.name }}</h4>
+<!-- It is an object map  aperson: personObject   -->
+    <p class="list-group-item-text">
+        {{ formattedAddressFunction({ aperson: personObject }) }}
+    </p>
+</a>    
+```
+## Lesson  38 Repeated Directive
+
+Add repeated objects using `**ng-repeat**`
+1. Creating an array of person objects
+1. Looping over the array and pass only 1 object to the **search-result directive**
+**app.js**
+```javascript
+myApp.controller('mainController', ['$scope', '$log', function($scope, $log) {
+    
+    $scope.people = [
+        {
+        name: 'John Doe',
+        address: '555 Main St.',
+        city: 'New York',
+        state: 'NY',
+        zip: '11111'
+        },
+        {
+        name: 'Jane Doe',
+        address: '333 Second St.',
+        city: 'Buffalo',
+        state: 'NY',
+        zip: '22222'
+        },
+        {
+        name: 'George Doe',
+        address: '111 Third St.',
+        city: 'Miami',
+        state: 'FL',
+        zip: '33333'
+        }
+    ]
+    
+    $scope.formattedAddress = function(person) {
+      
+        return person.address + ', ' + person.city + ', ' + person.state + ' ' + person.zip;
+        
+    };
+    
+}]);
+```
+
+**main.html**
+```javascript
+<search-result person-object="person" 
+formatted-address-function="formattedAddress(aperson)" 
+ng-repeat="person in people">
+</search-result>
+```
+
+## Lesson 39  Compile
+
+**Compiler: ** convert the code to a lower level language (serverCode)
+**linker: **Will bring all of the compiled files together into a single file, which is executable by the machine
+
+**It is to make changes on the directive html prior it is completed rendered, compiled**
+
+**app,js**
+```javascript
+// compile expects a function
+myApp.directive("searchResult", function() {
+   return {
+       restrict: 'AECM',
+       templateUrl: 'directives/searchresult.html',
+       replace: true,
+       scope: {
+           personObject: "=",
+           formattedAddressFunction: "&"
+       },
+//elem: means elements , attrs: means the attributes of the element
+//every time when the ng-repeat runs, we get a new scope for the directive
+//Compile, --> you can change the element, in the fly, before it will be viewed
+       compile: function(elem, attrs) {
+           
+           console.log('Compiling...');
+           //elem.removeAttr('class');    -->You can remove stuff from html
+           console.log(elem);
+           // console.log(elem.html());
+           
+           return {
+//It is for nested directives, it will run first, for all of the child directives
+               pre: function(scope, elements, attrs) {
+                    console.log('Pre-linking...');
+                    console.log(elements);
+               },
+//Runs after all of the directives have been compiled
+//it will run for every instance of the directive, and modify the html content on the fly
+//You can access all of the passer objec arguments in the post function
+               post: function(scope, elements, attrs) {
+                    console.log('Post-linking...');
+                    console.log(scope);
+                   if (scope.personObject.name == 'Jane Doe') {
+                        elements.removeAttr('class');
+                   }
+                   console.log(elements);
+               }
+           }
+           
+       }
+   }
+```
+
+## Lesson 40 Link
+**link is a shortand for compile, to modify html propertey on the fly when it has been generated**
+```javascript
+myApp.directive("searchResult", function() {
+   return {
+       restrict: 'AECM',
+       templateUrl: 'directives/searchresult.html',
+       replace: true,
+       scope: {
+           personObject: "=",
+           formattedAddressFunction: "&"
+       },
+       link: function(scope, elements, attrs) {     
+           console.log('Linking...');
+           console.log(scope);
+           if (scope.personObject.name == 'Jane Doe') {
+                elements.removeAttr('class');
+           }
+           console.log(elements);
+        }           
+   }
+```
+
+## Lesson 41  Transclusion 
+
+ **Transclusion **including one document into an other document.
+ //// Every data which is in the directive tag will be replaced if `**transclude **`is is not set
+ 
+ **app.js**
+```javascript
+ myApp.directive("searchResult", function() {
+   return {
+       restrict: 'AECM',
+       templateUrl: 'directives/searchresult.html',
+       replace: true,
+       scope: {
+           personObject: "=",
+           formattedAddressFunction: "&"
+       },
+       transclude: true
+   }
+```
+**main.html**
+```javascript
+<a href="#" class="list-group-item">
+    <h4 class="list-group-item-heading">{{ personObject.name }}</h4>
+    <p class="list-group-item-text">
+        {{ formattedAddressFunction({ aperson: personObject }) }}
+    </p>
+    <small ng-transclude></small>
+</a>
+```
+ 
+## Lesson 42 CodeAlong Part1
+
+**Setup the follwowing**
+1. Creating app with **angular.module, ** include it in the html, to let angular know what will be the DOM
+1. Import **ngRoute **+ **ngResource**, for routing and services
+1. Configure routing, and creating html templates
+1. Creating controllers, and assign them to the templates
+## Lesson 43 CodeAlong Part2
+1. **Service is created to store data**
+1. Service is injected to the **homecontroller**, it has been binded with two way databinding + added to the watchlist
+1. Service has been insterted to the **forecastController**, and the value is passed
+
+## Lesson 45 CodeAlong Part3
+1. We create a **$resource ** request, notify angular to add custom query parameters + allowing data to inflow
+1. Looping over the recieved data in the forecast html
+1. Adding RESTAPI for /:id to get the correct days
+1. add functions to convert the recieved data
+## Lesson 46 CodeAlong Part4
+
+1. Adding forecast Day buttons
+
+## Lesson 49 ng-submit
+So if we wrap the button around a form, we can use **ng-submit** directive, to **execute a function, upon this event**
+**$location.path("/forecast");  ** is used to navigate away from the route.
+
+
+**home.html**
+```javascript
+<form ng-submit="submit()">
+    <div class="form-group">
+        <input type="text" ng-model="city" class="form-control" />
+    </div>
+    <input type="submit" value="Get Forecast" class="btn btn-primary" />
+</form>
+```
+  **controllers.js**
+```javascript
+// CONTROLLERS
+weatherApp.controller('homeController', ['$scope', '$location', 'cityService', function($scope, $location, cityService) {
+    
+    $scope.city = cityService.city;
+    
+    $scope.$watch('city', function() {
+       cityService.city = $scope.city; 
+    });
+    
+    $scope.submit = function() {
+        $location.path("/forecast");
+    };
+    
+}]);
+```
+
+## Lesson 50 Large Scale Service
+
+Role is to reduce the controllers code, and outsource everything which is not related immedately to the view.
+For example fetching the data can be outsource to it's seperate service, object
+Outsourcing **weatherService**
+
+**services.js**
+```javascript
+weatherApp.service('weatherService', ['$resource', function($resource) {
+   
+    this.GetWeather = function(city, days) {
+        var weatherAPI = $resource("http://api.openweathermap.org/data/2.5/forecast/daily", { callback: "JSON_CALLBACK" }, { get: { method: "JSONP" }});
+    
+        return weatherResult = weatherAPI.get({ q: city, cnt: days });
+    };
+    
+}]);
+```
+
+**controllers.js**
+```javascript
+weatherApp.controller('forecastController', ['$scope', '$resource', '$routeParams', 'cityService', 'weatherService', function($scope, $resource, $routeParams, cityService, weatherService) {
+    
+    $scope.city = cityService.city;
+    $scope.days = $routeParams.days || '2';
+    $scope.weatherResult = weatherService.GetWeather($scope.city, $scope.days);
+    
+    $scope.convertToFahrenheit = function(degK) {
+        
+        return Math.round((1.8 * (degK - 273)) + 32);
+        
+    }
+    
+    $scope.convertToDate = function(dt) { 
+      
+        return new Date(dt * 1000);
+        
+    };
+```
+
+
+## Lesson  51 Nested Controllers / Controller as ***
+
+**Controller as ***
+[https://codepen.io/RevillWeb/pen/WbQpaV](https://codepen.io/RevillWeb/pen/WbQpaV)
+
+**Just nesting controllers into each other, sharing the scope**
+[http://www.angularjshub.com/examples/basics/nestedcontrollers/](http://www.angularjshub.com/examples/basics/nestedcontrollers/)
+
+
+**Nested Controllers:**
+Basically, what you can do, instead of **sharing the same variable names** in the passed **$scope **objects, you can ceate custom objects with properties to reference different controller's scope.
+**app.js**
+```javascript
+/*************Assign Special objects to reference its data in the passed scope*/
+angular.module('app').controller("ParentController",['$scope', function($scope){
+    $scope.parentobj = {};
+    $scope.parentobj.title = 'AngularJS Nested Controller Example';
+}]);
+//So this is the main Controller  described as sub.
+angular.module('app').controller("ChildController",['$scope', function($scope){
+    $scope.title = 'Sub-heading';
+    console.log($scope);
+}]);
+```
+**index.html**
+```javascript
+
+<div class='container' ng-controller='ParentController'>
+  <h3>{{parentobj.title}} *****(parentobj.title)****</h3>
+  <div ng-controller='ChildController'>
+    <h5>{{title}}  *****(title)**** </h5>
+    <h6>{{parentobj.title}}  *****(parentobj.title)****  in the child component</h6>
+    <p>If we were not using the <strong>ControllerAs</strong> syntax we would have a problem using title twice!</p>
+  <input type="text"  value="parentobj.title" ng-model="parentobj.title"></input>
+  </div>
+</div>
+```
+
+**Controller As**
+ So every component can have their own** $scope** variable and you can reference it's properteis, but you have to 
+1.  give an  **controller as aliasName**
+1. Instead of injecting the $scope, what is necessary it to **reference as this.**
+```javascript
+ /*********CONTROLLER AS ****************/
+//So this is the main Controller  described as main.
+angular.module('app').controller("MainController", function(){
+
+    let vm = this;
+    vm.title = 'AngularJS As Controller Example';
+});
+
+//So this is the main Controller  described as sub.
+angular.module('app').controller("SubController", function(){
+    let vm = this;
+    vm.title = 'Sub-heading * as';
+});
+```
+
+**Index.html**
+```javascript
+<div class='container' ng-controller='MainController as main'>
+  <h3>Here we are declaring a ParentController as "main"</h3>
+  <h6>{{main.title}}  *****(main.title)****</h6> 
+  <div ng-controller='SubController as sub'>
+    <h5>Here we are declaring a ChildController as "sub"</h5>
+    <h6>{{sub.title}}  *****(sub.title)****</h6>
+    <h6>{{main.title}}  *****(main.title)****</h6>
+  <input type="text"  value="main.title" ng-model="main.title"></input>
+  </div>
+</div>
+```
+
+
+
+

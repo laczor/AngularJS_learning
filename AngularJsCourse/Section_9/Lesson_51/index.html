@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>AngularJS Tutorial</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular.min.js"></script>
+    <script src="app.js"></script>
+</head>
+<body ng-app='app'>
+
+<div>
+  <h1>
+    Here we are using custom objects for each component
+  </h1>
+</div>
+
+<div class='container' ng-controller='ParentController'>
+  <h3>{{parentobj.title}} *****(parentobj.title)****</h3>
+  <div ng-controller='ChildController'>
+    <h5>{{title}}  *****(title)**** </h5>
+    <h6>{{parentobj.title}}  *****(parentobj.title)****  in the child component</h6>
+    <p>If we were not using the <strong>ControllerAs</strong> syntax we would have a problem using title twice!</p>
+  <input type="text"  value="parentobj.title" ng-model="parentobj.title"></input>
+  </div>
+</div>
+
+<div>
+  <h2>
+    Here we are using controller as ***, to keep track of the component's scope
+  </h2>
+</div>
+
+<div class='container' ng-controller='MainController as main'>
+  <h3>Here we are declaring a ParentController as "main"</h3>
+  <h6>{{main.title}}  *****(main.title)****</h6> 
+  <div ng-controller='SubController as sub'>
+    <h5>Here we are declaring a ChildController as "sub"</h5>
+    <h6>{{sub.title}}  *****(sub.title)****</h6>
+    <h6>{{main.title}}  *****(main.title)****</h6>
+  <input type="text"  value="main.title" ng-model="main.title"></input>
+  </div>
+</div>
+<div>
+  <label> You can Change the main.title value with two way binding!</label>
+</div>
+
+</body>
+</html>
